@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #url-input {
+            padding: 15px 20px;
+            font-size: 1rem;
+            border: 2px solid #007BFF;
+            border-radius: 8px;
+            width: 250px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        #url-input:focus {
+            border-color: #0056b3;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        #generate-btn {
+            margin-top: 20px;
+            padding: 15px 20px;
+            font-size: 0.8rem;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        #generate-btn:hover {
+            background-color: #0056b3;
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.7);
+            transform: translateY(-3px);
+        }
+
+        #generate-btn:active {
+            transform: translateY(0);
+        }
+
+        #qr-code {
+            margin-top: 20px;
+        }
+
+        #qr-image {
+            max-width: 100%;
+            border: 5px solid #007BFF;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        #qr-image.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    <h1>QR Code Generator</h1>
+    <input type="text" id="url-input" placeholder="Enter URL" />
+    <button id="generate-btn">Generate QR Code</button>
+    <div id="qr-code">
+        <img id="qr-image" src="" alt="QR Code will appear here" />
+    </div>
+
+    <script>
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const url = document.getElementById('url-input').value;
+            if (url) {
+                fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const qrImage = document.getElementById('qr-image');
+                        qrImage.src = data.qrPath;
+                        qrImage.classList.add('show');
+                    } else {
+                        alert('Failed to generate QR code.');
+                    }
+                });
+            } else {
+                alert('Please enter a URL.');
+            }
+        });
+    </script>
+</body>
+</html>
