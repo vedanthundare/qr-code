@@ -1,33 +1,29 @@
 import express from 'express';
 import qr from 'qr-image';
-import fs from 'fs';
 import bodyParser from 'body-parser';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid'; // Import UUID for unique filenames
 
 const app = express();
 const PORT = 3000;
 
-// Middleware to parse JSON data
 app.use(bodyParser.json());
-app.use(express.static('public')); // Serve static files from 'public' directory
+app.use(express.static('public'));
 
-// Route to serve the index.html file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(__dirname + '/public/index.html');
 });
 
 app.post('/generate', (req, res) => {
     const url = req.body.url;
     if (url) {
-        const uniqueFilename = `${uuidv4()}.png`; // Generate a unique filename
-        const qrPath = path.join('public', uniqueFilename);
-        const qr_svg = qr.image(url, { type: 'png' });
-        qr_svg.pipe(fs.createWriteStream(qrPath));
+        try {
+            const qr_svg = qr.image(url, { type: 'png' });
 
-        qr_svg.on('end', () => {
-            res.json({ success: true, qrPath: `/${uniqueFilename}` });
-        });
+            // Set the Content-Type header to image/png and send the QR code image
+            res.setHeader('Content-Type', 'image/png');
+            qr_svg.pipe(res);  // Send the image directly as a response
+        } catch (error) {
+            res.json({ success: false, message: 'Failed to generate QR code.' });
+        }
     } else {
         res.json({ success: false, message: 'URL is required' });
     }
