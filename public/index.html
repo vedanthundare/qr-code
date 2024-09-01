@@ -89,30 +89,37 @@
     </div>
 
     <script>
-        document.getElementById('generate-btn').addEventListener('click', () => {
-            const url = document.getElementById('url-input').value;
-            if (url) {
-                fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const qrImage = document.getElementById('qr-image');
-                        qrImage.src = data.qrPath;
-                        qrImage.classList.add('show');
-                    } else {
-                        alert('Failed to generate QR code.');
-                    }
-                });
+       document.getElementById('generate-btn').addEventListener('click', () => {
+    const url = document.getElementById('url-input').value;
+    if (url) {
+        fetch('/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url }),
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();  // Get the image as a Blob
             } else {
-                alert('Please enter a URL.');
+                throw new Error('Failed to generate QR code.');
             }
+        })
+        .then(blob => {
+            const qrImage = document.getElementById('qr-image');
+            const imgURL = URL.createObjectURL(blob);
+            qrImage.src = imgURL;
+            qrImage.classList.add('show');
+        })
+        .catch(error => {
+            alert(error.message);
         });
+    } else {
+        alert('Please enter a URL.');
+    }
+});
+
     </script>
 </body>
 </html>
